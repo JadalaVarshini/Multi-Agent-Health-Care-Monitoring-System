@@ -163,11 +163,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-### Step 7: Open the Application
 
-Open your browser and visit:
-
-http://localhost:5000
 
 ## Demo Login Credentials
 
