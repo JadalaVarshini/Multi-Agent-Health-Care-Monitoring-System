@@ -1,0 +1,13 @@
+{% extends "base_doctor.html" %}{% block title %}Dashboard · Doctor portal{% endblock %}
+{% block body %}<h1>Welcome, {{ user.name }}</h1><p class="mute">{{ doc.specialty }} · {{ today }}</p>
+{% for a in alerts %}<div class="alert-box"><strong>⚠ {{a.patient}}</strong> — {{a.message}} <span class="small mute">{{a.ts}}</span> <a href="{{ url_for('doctor_alerts') }}">Review</a></div>{% endfor %}
+<div class="grid g4"><div class="card stat"><div class="l">Today's appointments</div><div class="v">{{ov.today}}</div></div><div class="card stat"><div class="l">Awaiting confirmation</div><div class="v">{{ov.pending}}</div></div>
+<div class="card stat"><div class="l">Patients</div><div class="v">{{ov.patients}}</div></div><div class="card stat"><div class="l">Open patient alerts</div><div class="v">{{ov.alerts}}</div></div></div>
+<div class="grid g2"><div class="card"><h2>Today's schedule</h2>{% for a in today_list %}<div class="row" style="padding:6px 0"><strong>{{a.time}}</strong><div><a href="{{ url_for('doctor_patient',uid=a.user_id) }}">{{a.patient}}</a><div class="small mute">{{a.reason or 'No reason given'}}</div></div><span class="pill {{a.status}} right">{{a.status}}</span></div>
+{% else %}<p class="mute small">Nothing scheduled today.</p>{% endfor %}</div>
+<div class="card"><h2>Requests to confirm</h2>{% for a in pending %}<div class="row" style="padding:6px 0"><div><a href="{{ url_for('doctor_patient',uid=a.user_id) }}">{{a.patient}}</a><div class="small mute">{{a.date}} · {{a.time}} — {{a.reason}}</div></div>
+<form method="post" class="right inl" action="{{ url_for('doctor_appt_status',i=a.id) }}"><input type="hidden" name="next" value="{{ url_for('doctor_dashboard') }}"><button class="btn sm" name="action" value="confirm">Confirm</button><button class="btn sm ghost" name="action" value="cancel">Decline</button></form></div>
+{% else %}<p class="mute small">No pending requests.</p>{% endfor %}</div></div>
+<div class="card"><h2>Next 7 days — booked load</h2><canvas id="load"></canvas></div>{% endblock %}
+{% block scripts %}<script src="{{ url_for("static", filename="chart.umd.js") }}"></script><script>
+new Chart(document.getElementById('load'),{type:'bar',data:{labels:{{ ov.load_labels|tojson }},datasets:[{data:{{ ov.load|tojson }},backgroundColor:'#0e8a7d'}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});</script>{% endblock %}

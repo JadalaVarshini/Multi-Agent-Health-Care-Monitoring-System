@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Medicine reminders · MediAgents{% endblock %}
+{% block body %}<h1>Medicine reminders</h1><p class="mute">Daily reminders pop up here while this site is open. Mark each dose as taken to track adherence.</p>
+<div class="grid g2"><div class="card"><h2>Add medicine</h2><form method="post"><label>Medicine</label><input name="medicine" required><label>Dosage</label><input name="dosage" placeholder="e.g. 500 mg, 1 tablet" required>
+<div class="grid g2"><div><label>Time (daily)</label><input type="time" name="time" required></div><div><label>Start date</label><input type="date" name="start_date" value="{{today}}" required></div></div>
+<label>End date (optional)</label><input type="date" name="end_date"><label>Notes</label><input name="notes" placeholder="After food…"><button class="btn" style="margin-top:14px">Add reminder</button></form></div>
+<div class="card"><h2>Today</h2><div id="todayMeds" class="small mute">Loading…</div></div></div>
+<div class="card"><h2>Adherence — last 14 days</h2><canvas id="adh"></canvas></div>
+<div class="card"><h2>All medicines</h2><table><tr><th>Medicine</th><th>Dose</th><th>Time</th><th>Period</th><th></th></tr>
+{% for r in all %}<tr><td>{{r.medicine}}<div class="small mute">{{r.notes}}</div>{% if r.doctor %}<div class="small"><span class="pill info">Prescribed by {{r.doctor}}</span></div>{% endif %}</td><td>{{r.dosage}}</td><td>{{r.time}}</td><td>{{r.start_date}} → {{r.end_date or 'ongoing'}}</td><td><form method="post" action="{{ url_for('del_reminder',i=r.id) }}"><button class="btn sm ghost">Remove</button></form></td></tr>
+{% else %}<tr><td colspan="5" class="mute">No medicines yet.</td></tr>{% endfor %}</table></div>{% endblock %}
+{% block scripts %}<script src="{{ url_for("static", filename="chart.umd.js") }}"></script><script>
+function refreshReminders(){const d=new Date(),date=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,time=`${p2(d.getHours())}:${p2(d.getMinutes())}`;
+fetch(`/api/reminders?date=${date}&time=${time}`).then(r=>r.json()).then(rs=>{const el=document.getElementById('todayMeds');el.className='';
+el.innerHTML=rs.length?rs.map(r=>`<div class="row" style="padding:7px 0"><div><strong>${r.medicine}</strong> <span class="small mute">${r.dosage} · ${r.time}</span></div><span class="pill ${r.status} right">${r.status}</span>${r.status!=='taken'&&r.status!=='upcoming'?`<button class="btn sm" onclick="fetch('/api/reminders/${r.id}/take?date=${date}',{method:'POST'}).then(refreshReminders)">Taken</button>`:''}</div>`).join(''):'<p class="mute">No medicines scheduled today.</p>';});}
+refreshReminders();
+const A={{ adh|tojson }};new Chart(document.getElementById('adh'),{type:'bar',data:{labels:A.map(a=>a.date.slice(5)),datasets:[{label:'Adherence %',data:A.map(a=>a.pct),backgroundColor:'#0e8a7d'}]},options:{scales:{y:{min:0,max:100}},plugins:{legend:{display:false}}}});</script>{% endblock %}

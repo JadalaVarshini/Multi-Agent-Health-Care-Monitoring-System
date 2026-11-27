@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Symptom checker · MediAgents{% endblock %}
+{% block body %}<h1>Symptom checker</h1><p class="mute">Describe how you feel in your own words. The NLP agent (TF-IDF + logistic regression, ~{{ (acc*100)|round(0)|int }}% test accuracy on {{ntrain}} training sentences) extracts symptoms, handles negation ("no fever") and ranks likely conditions.</p>
+<div class="card"><form method="post"><label for="t">Your symptoms</label><textarea id="t" name="text" rows="3" placeholder="e.g. I've had a high fever, body ache and chills for 3 days, but no cough">{{text}}</textarea>
+<button class="btn" style="margin-top:12px">Analyze</button></form></div>
+{% if res %}
+{% if res.emergency %}<div class="alert-box"><strong>⚠ This may be an emergency.</strong> {% if res.red_flags %}Red-flag symptoms detected: {{ res.red_flags|join(', ') }}.{% endif %} Call your local emergency number or go to the nearest emergency room now. An alert was recorded. <a href="{{ url_for('emergency') }}">Emergency page</a></div>{% endif %}
+<div class="card"><h2>Detected symptoms</h2><div class="chips">{% for s in res.symptoms %}<span>{{s}}</span>{% else %}<span class="mute">none recognised — try more detail</span>{% endfor %}</div>
+{% if res.negated %}<p class="small mute">Ruled out by you: {{ res.negated|join(', ') }}</p>{% endif %}</div>
+<div class="grid g3">{% for r in res.results %}<div class="card"><div class="row"><h3>{{r.disease}}</h3><span class="pill {{ 'critical' if r.severity>=4 else 'warn' if r.severity>=3 else 'ok' }} right">severity {{r.severity}}/5</span></div>
+<div class="bar"><i style="width:{{r.confidence}}%"></i></div><p class="small"><strong>{{r.confidence}}%</strong> match · {{r.specialty}}</p>
+{% if r.matched %}<p class="small mute">Matched: {{r.matched|join(', ')}}</p>{% endif %}<p class="small" style="margin-bottom:2px"><strong>Suggested precautions</strong></p><ul class="small" style="margin:0;padding-left:18px">{% for p in r.precautions %}<li>{{p}}</li>{% endfor %}</ul></div>{% endfor %}</div>
+<div class="card"><h2>Recommended doctors — {{res.specialty}}</h2>{% for d in docs %}<div class="row" style="padding:7px 0"><div><strong>{{d.name}}</strong><div class="small mute">{{d.experience}} yrs · {{d.rating|stars}} · {{d.days}}</div></div><a class="btn sm right" href="{{ url_for('appointments', doctor=d.id) }}">Book</a></div>{% endfor %}</div>
+<p class="small mute">This tool is informational only and is not a medical diagnosis. Consult a qualified doctor.</p>{% endif %}
+<div class="card"><h2>Recent checks</h2><table><tr><th>When</th><th>Input</th><th>Top match</th></tr>{% for h in hist %}<tr><td>{{h.ts}}</td><td>{{h.text}}</td><td>{{h.top_disease}} ({{h.confidence}}%)</td></tr>{% else %}<tr><td colspan="3" class="mute">No checks yet.</td></tr>{% endfor %}</table></div>{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base_doctor.html" %}{% block title %}Patient alerts · Doctor portal{% endblock %}
+{% block body %}<h1>Patient alerts</h1><p class="mute">Critical vitals, red-flag symptoms and SOS events from your patients, raised by the Emergency agent.</p>
+<div class="card" style="overflow-x:auto"><table><tr><th>When</th><th>Patient</th><th>Source</th><th>Message</th><th>Status</th><th></th></tr>
+{% for a in alerts %}<tr><td>{{a.ts}}</td><td><a href="{{ url_for('doctor_patient',uid=a.user_id) }}">{{a.patient}}</a></td><td>{{a.source}}</td><td>{{a.message}}</td><td><span class="pill {{ 'ok' if a.resolved else 'critical' }}">{{ 'resolved' if a.resolved else 'open' }}</span></td>
+<td>{% if not a.resolved %}<form method="post"><input type="hidden" name="id" value="{{a.id}}"><button class="btn sm ghost">Mark resolved</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="mute">No alerts.</td></tr>{% endfor %}</table></div>{% endblock %}

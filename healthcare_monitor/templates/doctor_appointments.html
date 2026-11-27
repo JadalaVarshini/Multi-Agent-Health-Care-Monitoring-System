@@ -1,0 +1,9 @@
+{% extends "base_doctor.html" %}{% block title %}Appointments · Doctor portal{% endblock %}
+{% block body %}<h1>Appointments</h1><p class="mute">Confirm requests, then mark visits completed (with consultation notes) once they have taken place.</p>
+<div class="tabs">{% for k,l in [('upcoming','Upcoming'),('pending','Awaiting confirmation'),('past','Past'),('all','All')] %}<a class="{{ 'on' if flt==k }}" href="?f={{k}}">{{l}}</a>{% endfor %}</div>
+<div class="card" style="overflow-x:auto"><table><tr><th>When</th><th>Patient</th><th>Reason</th><th>Status</th><th>Action</th></tr>
+{% for a in rows %}<tr><td>{{a.date}}<br><span class="small mute">{{a.time}}</span></td><td><a href="{{ url_for('doctor_patient',uid=a.user_id) }}">{{a.patient}}</a><div class="small mute">{{a.age or '—'}} · {{a.gender or ''}}</div></td><td>{{a.reason}}</td>
+<td><span class="pill {{a.status}}">{{a.status.replace('_',' ')}}</span>{% if a.doctor_notes %}<div class="small mute">{{a.doctor_notes}}</div>{% endif %}</td>
+<td>{% if a.status in ('booked','confirmed') %}<form method="post" class="inl" action="{{ url_for('doctor_appt_status',i=a.id) }}"><input type="hidden" name="next" value="{{ request.full_path }}"><input type="text" name="note" placeholder="Note / reason (optional)">
+{% if a.status=='booked' %}<button class="btn sm" name="action" value="confirm">Confirm</button>{% endif %}{% if a.date<=today %}<button class="btn sm" name="action" value="complete">Complete</button>{% if a.status=='confirmed' %}<button class="btn sm ghost" name="action" value="noshow">No-show</button>{% endif %}{% endif %}<button class="btn sm ghost" name="action" value="cancel">Cancel</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Nothing here.</td></tr>{% endfor %}</table></div>{% endblock %}

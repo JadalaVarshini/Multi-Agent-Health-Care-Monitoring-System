@@ -1,0 +1,4 @@
+{% extends "auth_base.html" %}{% block title %}Signed out · MediAgents{% endblock %}
+{% block body %}<div class="card" style="text-align:center"><h1>You've been signed out</h1>
+<p class="mute">Your session has ended and all data is safely stored.{% if role!='doctor' %} Take care, and remember your medicines!{% endif %}</p>
+<a class="btn" href="{{ url_for('doctor_login' if role=='doctor' else 'login') }}">Sign in again</a></div>{% endblock %}

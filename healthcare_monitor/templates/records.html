@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block title %}Health records · MediAgents{% endblock %}
+{% block body %}<h1>Health records</h1><p class="mute">Log vitals and keep your medical history in one place. Critical values automatically trigger the Emergency agent.</p>
+<div class="grid g2"><div class="card"><h2>Log vitals</h2><form method="post"><input type="hidden" name="kind" value="vitals">
+<div class="grid g2"><div><label>Systolic (mmHg)</label><input name="systolic" type="number"></div><div><label>Diastolic (mmHg)</label><input name="diastolic" type="number"></div>
+<div><label>Heart rate (bpm)</label><input name="heart_rate" type="number"></div><div><label>Glucose (mg/dL)</label><input name="glucose" type="number" step="0.1"></div>
+<div><label>Temperature (°C)</label><input name="temperature" type="number" step="0.1"></div><div><label>Weight (kg)</label><input name="weight" type="number" step="0.1"></div>
+<div><label>SpO₂ (%)</label><input name="spo2" type="number" max="100"></div><div><label>Date/time (optional)</label><input name="ts" type="datetime-local"></div></div>
+<button class="btn" style="margin-top:14px">Save vitals</button></form></div>
+<div class="card"><h2>Add medical record</h2><form method="post"><input type="hidden" name="kind" value="record">
+<label>Date</label><input type="date" name="date" value="{{today}}" required><label>Category</label><select name="category"><option>Diagnosis</option><option>Lab report</option><option>Prescription</option><option>Allergy</option><option>Surgery</option><option>Vaccination</option><option>Other</option></select>
+<label>Title</label><input name="title" required><label>Notes</label><textarea name="notes" rows="3"></textarea><button class="btn" style="margin-top:14px">Save record</button></form></div></div>
+<div class="card"><h2>Medical history</h2><table><tr><th>Date</th><th>Category</th><th>Title</th><th>Notes</th><th>By</th><th></th></tr>
+{% for r in recs %}<tr><td>{{r.date}}</td><td><span class="pill info">{{r.category}}</span></td><td>{{r.title}}</td><td>{{r.notes}}</td><td>{{ r.doctor or 'You' }}</td><td>{% if not r.doctor %}<form method="post" action="{{ url_for('delete_record',kind='record',i=r.id) }}"><button class="btn sm ghost">Delete</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="mute">No records yet.</td></tr>{% endfor %}</table></div>
+<div class="card"><h2>Recent vitals</h2><div style="overflow-x:auto"><table><tr><th>When</th><th>BP</th><th>HR</th><th>Glucose</th><th>Temp</th><th>Weight</th><th>SpO₂</th><th></th></tr>
+{% for v in vitals %}<tr><td>{{v.ts}}</td><td>{{v.systolic or '—'}}/{{v.diastolic or '—'}}</td><td>{{v.heart_rate or '—'}}</td><td>{{v.glucose or '—'}}</td><td>{{v.temperature or '—'}}</td><td>{{v.weight or '—'}}</td><td>{{v.spo2 or '—'}}</td>
+<td><form method="post" action="{{ url_for('delete_record',kind='vitals',i=v.id) }}"><button class="btn sm ghost">×</button></form></td></tr>{% endfor %}</table></div></div>{% endblock %}

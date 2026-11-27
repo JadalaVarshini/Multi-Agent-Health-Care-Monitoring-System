@@ -1,0 +1,6 @@
+{% extends "base_doctor.html" %}{% block title %}Profile · Doctor portal{% endblock %}
+{% block body %}<h1>Profile</h1><div class="card" style="max-width:560px"><form method="post"><label>Name</label><input name="name" value="{{ doc.name }}" required>
+<label>Specialty</label><select name="specialty">{% for s in specs %}<option {{ 'selected' if s==doc.specialty }}>{{s}}</option>{% endfor %}</select>
+<label>Years of experience</label><input name="experience" type="number" min="0" max="60" value="{{ doc.experience }}" required><label>Phone</label><input name="phone" value="{{ user.phone or '' }}">
+<label>Email</label><input value="{{ user.email }}" disabled><label>Registration number</label><input value="{{ doc.license or 'not provided' }}" disabled>
+<label>Patient rating</label><input value="{{ doc.rating|stars }}" disabled><button class="btn" style="margin-top:14px">Save profile</button></form></div>{% endblock %}

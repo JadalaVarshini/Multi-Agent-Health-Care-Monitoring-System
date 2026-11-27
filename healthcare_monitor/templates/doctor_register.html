@@ -1,0 +1,10 @@
+{% extends "auth_base.html" %}{% block title %}Doctor registration · MediAgents{% endblock %}
+{% block body %}<div class="card"><h1>Doctor registration</h1>
+<form method="post"><label>Full name</label><input name="name" required><label>Email</label><input name="email" type="email" required>
+<label>Password (min 6 characters)</label><input name="password" type="password" minlength="6" required>
+<div class="grid g2"><div><label>Specialty</label><select name="specialty">{% for s in specs %}<option>{{s}}</option>{% endfor %}</select></div>
+<div><label>Years of experience</label><input name="experience" type="number" min="0" max="60" required></div></div>
+<label>Medical registration number</label><input name="license" required><p class="small mute" style="margin:2px 0 0">Stored on your profile. This demo does not verify it - a real deployment should.</p>
+<label>Phone</label><input name="phone"><label>Working days</label><div class="days">{% for d in days %}<label><input type="checkbox" name="days" value="{{d}}" {{ 'checked' if d in ['Mon','Tue','Wed','Thu','Fri'] }}>{{d}}</label>{% endfor %}</div>
+<button class="btn" style="width:100%;margin-top:18px">Register</button></form>
+<p class="small" style="text-align:center;margin-top:14px"><a href="{{ url_for('doctor_login') }}">Back to doctor sign in</a></p></div>{% endblock %}

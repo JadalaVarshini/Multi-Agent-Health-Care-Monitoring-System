@@ -1,0 +1,5 @@
+{% extends "base_doctor.html" %}{% block title %}My patients · Doctor portal{% endblock %}
+{% block body %}<h1>My patients</h1><p class="mute">Patients who have an appointment with you. Patients with open alerts are listed first.</p>
+<div class="card" style="overflow-x:auto"><table><tr><th>Patient</th><th>Age / gender</th><th>Phone</th><th>Visits</th><th>Last visit</th><th>Alerts</th></tr>
+{% for p in pts %}<tr><td><a href="{{ url_for('doctor_patient',uid=p.id) }}">{{p.name}}</a></td><td>{{p.age or '—'}} · {{p.gender or ''}}</td><td>{{p.phone or '—'}}</td><td>{{p.visits}}</td><td>{{p.last_date}}</td><td>{% if p.open_alerts %}<span class="pill critical">{{p.open_alerts}} open</span>{% else %}<span class="pill ok">none</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="mute">No patients yet.</td></tr>{% endfor %}</table></div>{% endblock %}

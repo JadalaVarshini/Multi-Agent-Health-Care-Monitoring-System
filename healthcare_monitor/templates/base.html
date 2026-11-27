@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}MediAgents{% endblock %}</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% block head %}{% endblock %}</head><body><div class="shell">
+<nav class="side"><div class="brand">✚ MediAgents</div>
+{% set nav=[('dashboard','Dashboard'),('records','Health records'),('appointments','Appointments'),('reminders','Medicine reminders'),('symptoms','Symptom checker'),('doctors','Doctors'),('emergency','Emergency'),('analytics','Health analytics'),('agents','Agent activity')] %}
+{% for ep,label in nav %}<a class="nav {{ 'on' if request.endpoint==ep }}" href="{{ url_for(ep) }}">{{label}}{% if ep=='emergency' and open_alerts %}<span class="badge">{{open_alerts}}</span>{% endif %}</a>{% endfor %}
+<div class="me"><div><strong>{{ user.name }}</strong></div><div class="small mute">{{ user.email }}</div>
+<form action="{{ url_for('logout') }}" method="post" style="margin-top:10px"><button class="btn ghost sm">Log out</button></form></div></nav>
+<main>{% for c,m in get_flashed_messages(with_categories=true) %}<div class="flash {{c}}" role="status">{{m}}</div>{% endfor %}{% block body %}{% endblock %}</main></div>
+<div class="toasts" id="toasts"></div>
+<script>
+// Reminder agent poller: uses the browser's local date/time so doses fire on the patient's clock.
+const seen=new Set();
+function p2(n){return String(n).padStart(2,'0')}
+async function pollReminders(){try{const d=new Date(),date=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,time=`${p2(d.getHours())}:${p2(d.getMinutes())}`;
+const r=await (await fetch(`/api/reminders?date=${date}&time=${time}`)).json();
+r.filter(x=>x.status==='due'&&!seen.has(x.id)).forEach(x=>{seen.add(x.id);toast(x,date);
+ if('Notification' in window&&Notification.permission==='granted')new Notification('Time for '+x.medicine,{body:x.dosage+' - '+(x.notes||'')});});}catch(e){}}
+function toast(x,date){const t=document.createElement('div');t.className='toast';t.innerHTML=`<strong>💊 ${x.medicine}</strong> ${x.dosage}<div class="small mute">Scheduled ${x.time}</div>`;
+const b=document.createElement('button');b.className='btn sm';b.textContent='Mark taken';b.style.marginTop='8px';
+b.onclick=async()=>{await fetch(`/api/reminders/${x.id}/take?date=${date}`,{method:'POST'});t.remove();if(typeof refreshReminders==='function')refreshReminders();};t.appendChild(b);document.getElementById('toasts').appendChild(t);}
+if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+pollReminders();setInterval(pollReminders,30000);
+</script>{% block scripts %}{% endblock %}</body></html>

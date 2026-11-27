@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Doctor portal · MediAgents{% endblock %}</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% block head %}{% endblock %}</head><body><div class="shell">
+<nav class="side"><div class="brand">✚ MediAgents<small>Doctor portal</small></div>
+{% set nav=[('doctor_dashboard','Dashboard'),('doctor_appointments','Appointments'),('doctor_patients','My patients'),('doctor_alerts','Patient alerts'),('doctor_schedule','Schedule & leave'),('doctor_profile','Profile')] %}
+{% for ep,label in nav %}<a class="nav {{ 'on' if request.endpoint==ep or (ep=='doctor_patients' and request.endpoint=='doctor_patient') }}" href="{{ url_for(ep) }}">{{label}}
+{% if ep=='doctor_appointments' and pending_count %}<span class="badge">{{pending_count}}</span>{% endif %}{% if ep=='doctor_alerts' and doc_alert_count %}<span class="badge">{{doc_alert_count}}</span>{% endif %}</a>{% endfor %}
+<div class="me"><div><strong>{{ user.name }}</strong></div><div class="small mute">{{ doc.specialty }}</div>
+<form action="{{ url_for('logout') }}" method="post" style="margin-top:10px"><button class="btn ghost sm">Log out</button></form></div></nav>
+<main>{% for c,m in get_flashed_messages(with_categories=true) %}<div class="flash {{c}}" role="status">{{m}}</div>{% endfor %}{% block body %}{% endblock %}</main></div>
+{% block scripts %}{% endblock %}</body></html>

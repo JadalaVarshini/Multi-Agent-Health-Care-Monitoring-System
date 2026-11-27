@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block title %}Dashboard · MediAgents{% endblock %}
+{% block body %}<h1>Hello, {{ user.name.split()[0] }}</h1><p class="mute">Your health at a glance, monitored by {{ agents|length }} cooperating agents.</p>
+{% for a in alerts %}<div class="alert-box"><strong>⚠ {{a.source}}</strong> — {{a.message}} <span class="small mute">{{a.ts}}</span> <a href="{{ url_for('emergency') }}">Review</a></div>{% endfor %}
+<div class="grid g4">
+<div class="card stat"><div class="l">Health score (heuristic)</div><div class="v">{{ summ.health_score }}<span class="small mute">/100</span></div></div>
+<div class="card stat"><div class="l">Blood pressure</div><div class="v">{% if last and last.systolic %}{{last.systolic}}/{{last.diastolic}}{% else %}—{% endif %}</div></div>
+<div class="card stat"><div class="l">Heart rate</div><div class="v">{% if last and last.heart_rate %}{{last.heart_rate}} <span class="small mute">bpm</span>{% else %}—{% endif %}</div></div>
+<div class="card stat"><div class="l">Medicine adherence (14d)</div><div class="v">{{ summ.adherence_pct if summ.adherence_pct is not none else '—' }}{% if summ.adherence_pct is not none %}<span class="small mute">%</span>{% endif %}</div></div></div>
+<div class="grid g2"><div class="card"><h2>Today's medicines</h2><div id="todayMeds" class="small mute">Loading…</div><a class="small" href="{{ url_for('reminders') }}">Manage reminders →</a></div>
+<div class="card"><h2>Upcoming appointments</h2>{% for a in appts %}<div class="row" style="padding:6px 0"><div><strong>{{a.doctor}}</strong><div class="small mute">{{a.specialty}}</div></div><div class="right small">{{a.date}} · {{a.time}}</div></div>
+{% else %}<p class="mute small">No upcoming appointments.</p>{% endfor %}<a class="btn sm" href="{{ url_for('appointments') }}">Book appointment</a></div></div>
+<div class="grid g2"><div class="card"><h2>Quick actions</h2><div class="row"><a class="btn" href="{{ url_for('symptoms') }}">Check symptoms</a><a class="btn ghost" href="{{ url_for('records') }}">Log vitals</a><a class="btn red" href="{{ url_for('emergency') }}">Emergency</a></div>
+<h3 style="margin-top:18px">Insights</h3>{% for i in summ.insights[:4] %}<p class="small" style="margin:.3rem 0">• {{i}}</p>{% else %}<p class="small mute">Log vitals to see insights.</p>{% endfor %}</div>
+<div class="card"><h2>Agent activity</h2>{% for l in log %}<div class="small" style="padding:3px 0"><span class="pill info">{{l.agent}}</span> {{l.event}} <span class="mute">{{l.ts[11:16]}}</span></div>{% else %}<p class="small mute">No activity yet.</p>{% endfor %}<a class="small" href="{{ url_for('agents') }}">All activity →</a></div></div>
+{% endblock %}
+{% block scripts %}<script>
+function refreshReminders(){const d=new Date(),date=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,time=`${p2(d.getHours())}:${p2(d.getMinutes())}`;
+fetch(`/api/reminders?date=${date}&time=${time}`).then(r=>r.json()).then(rs=>{const el=document.getElementById('todayMeds');
+el.className='';el.innerHTML=rs.length?rs.map(r=>`<div class="row" style="padding:5px 0"><div><strong>${r.medicine}</strong> <span class="small mute">${r.dosage} · ${r.time}</span></div><span class="pill ${r.status} right">${r.status}</span>${r.status!=='taken'&&r.status!=='upcoming'?`<button class="btn sm" onclick="fetch('/api/reminders/${r.id}/take?date=${date}',{method:'POST'}).then(refreshReminders)">Taken</button>`:''}</div>`).join(''):'<p class="mute small">No medicines scheduled today.</p>';});}
+refreshReminders();</script>{% endblock %}
