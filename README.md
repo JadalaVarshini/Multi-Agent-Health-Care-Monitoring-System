@@ -1,4 +1,3 @@
-# Multi-Agent-Health-Care-Monitoring-System
 # MediAgents – Multi-Agent Health Care Monitoring System
 
 ## Project Overview
